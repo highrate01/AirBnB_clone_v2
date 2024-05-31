@@ -12,7 +12,7 @@ def hello_hbnb():
     return "Hello HBNB!"
 
 
-@app.route('/hbnb', strict_slashes=False)
+@app.route('/hbnb/', strict_slashes=False)
 def hbnb():
     """return HBNB"""
     return "HBNB"
@@ -25,5 +25,5 @@ def c_text(text):
     return "C {}".format(text)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
