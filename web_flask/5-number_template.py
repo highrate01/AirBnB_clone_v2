@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """script that starts a Flask web application"""
 
-from flask import Flask
+from flask import Flask, render_template
 from markupsafe import escape
 
 app = Flask(__name__)
@@ -34,24 +34,16 @@ def python_route(text):
     return "Python {}".format(underscore)
 
 
-@app.route('/number/<n>', strict_slashes=False)
-def number_route(n):
+@app.route('/number/<int:n>', strict_slashes=False)
+def number(n):
     """display a number"""
-    try:
-        n = int(n)
-        return f"{n} is a number"
-    except ValueError:
-        pass
+    return f"{n} is a number"
 
 
-@app.route('/number_template/<n>', strict_slashes=False)
-def number_template_route(n):
+@app.route('/number_template/<int:n>', strict_slashes=False)
+def number_template(n):
     """display a template"""
-    try:
-        number = int(n)
-        return render_template('5-number.html', number=n)
-    except ValueError:
-        pass
+    return render_template('5-number.html', number=n)
 
 
 if __name__ == '__main__':
