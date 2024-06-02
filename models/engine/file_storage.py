@@ -19,10 +19,10 @@ class FileStorage:
         """Returns a dictionary of models currently in storage"""
         if cls:
             if isinstance(cls, str):
-                    cls = globals().get(cls)
+                cls = globals().get(cls)
             if cls and issubclass(cls, BaseModel):
                 cls_dict = {k: v for k,
-                           v in self.__objects.items() if isinstance(v, cls)}
+                            v in self.__objects.items() if isinstance(v, cls)}
                 return cls_dict
         return FileStorage.__objects
 
@@ -52,7 +52,7 @@ class FileStorage:
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
-                        self.all()[key] = classes[val['__class__']](**val)
+                    self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
             pass
 
@@ -71,3 +71,8 @@ class FileStorage:
         except KeyError:
             pass
 
+    def close(self):
+        """
+        call the reload method
+        """
+        self.reload()
