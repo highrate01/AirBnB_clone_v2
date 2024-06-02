@@ -17,6 +17,8 @@ class State(BaseModel, Base):
     cities = relationship('City', backref='states', cascade='all, delete-orphan')
 
     if STORAGE_TYPE != 'db':
+        name = ""
+        cities = []
         @property
         def cities(self):
             """

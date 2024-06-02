@@ -97,4 +97,4 @@ class DBStorage:
         """
         close the working sqlachemy
         """
-        self.__session.remove()
+        self.__session.close()
