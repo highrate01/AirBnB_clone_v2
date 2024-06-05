@@ -35,7 +35,7 @@ def python_route(text):
 
 
 @app.route('/number/<int:n>', strict_slashes=False)
-def number_route(n):
+def number(n):
     """display a number"""
     return f"{n} is a number"
 

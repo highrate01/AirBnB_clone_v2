@@ -73,7 +73,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] == '{' and pline[-1] =='}'\
+                    if pline[0] == '{' and pline[-1] == '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -116,36 +116,61 @@ class HBNBCommand(cmd.Cmd):
     def do_create(self, args):
         """ Create an object of any class"""
         try:
-            class_name = args.split(" ")[0]
-        except IndexError:
-            pass
+            class_name, *attrs = args.split(" ", 1)
+        except ValueError:
+            class_name, attrs = args, ""
         if not class_name:
             print("** class name missing **")
             return
-        elif class_name not in HBNBCommand.classes:
+        if class_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        all_list = args.split(" ")
 
-        new_instance = eval(class_name)()
+        new_instance = HBNBCommand.classes[class_name]()
+        if not attrs:
+            storage.new(new_instance)
+            print(new_instance.id)
+            new_instance.save()
+            return
 
-        for i in range(1, len(all_list)):
-            key, value = tuple(all_list[i].split("="))
+        import shlex
+        try:
+            attrs = shlex.split(attrs)
+        except ValueError as e:
+            print(f"** Invalid syntax: {e} **")
+            return
 
-            if value.startswith('"'):
-                value = value.strip('"').replace("_", " ")
-            else:
-                try:
-                    value = eval(value)
-                except Exception:
-                    print(f"** could not evaluate{value}")
-                    pass
+        for attr in attrs:
+            if '=' not in attr:
+                print(f"** Invalid attribute: {attr} **")
+                continue
+            key, value = attr.split('=', 1)
+            value = value.strip('"')
+            try:
+                if key in HBNBCommand.types:
+                    value = HBNBCommand.types[key](value)
+                elif key in ['created_at', 'updated_at']:
+                    try:
+                        value = datetime.fromisoformat(value)
+                    except ValueError:
+                        print(f"** Invalid datetime value\
+                                '{value}' for {key} **")
+                        continue
+                elif not value.replace('_', '').replace(' ', '').isalnum():
+                    print(f"** Invalid value '{value}' for {key} **")
+                    continue
+                else:
+                    value = value.replace('_', ' ')
+            except (ValueError, TypeError) as e:
+                print(f"** Could not set {key}: {e} **")
+                continue
+
             if hasattr(new_instance, key):
                 setattr(new_instance, key, value)
 
-        storage.new(new_instance)
-        print(new_instance.id)
-        new_instance.save()
+    storage.new(new_instance)
+    print(new_instance.id)
+    new_instance.save()
 
     def help_create(self):
         """ Help information for the create method """
@@ -227,11 +252,13 @@ class HBNBCommand(cmd.Cmd):
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
+            """for k, v in storage._FileStorage__objects.items():"""
+            for k, v in storage.all().items():
                 if k.split('.')[0] == args:
                     print_list.append(str(v))
         else:
-            for k, v in storage._FileStorage__objects.items():
+            """for k, v in storage._FileStorage__objects.items():"""
+            for v in storage.all().values():
                 print_list.append(str(v))
 
         print(print_list)
@@ -340,6 +367,7 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
